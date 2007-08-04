@@ -6,6 +6,7 @@ use base 'Exporter';
 use Carp;
 
 our @EXPORT_OK = qw(read_xlogfile parse_xlogline write_xlogfile make_xlogline);
+our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
 =head1 NAME
 
@@ -13,11 +14,11 @@ Text::XLogfile - reading and writing xlogfiles
 
 =head1 VERSION
 
-Version 0.01 released 03 Jul 07
+Version 0.02 released 04 Aug 07
 
 =cut
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 =head1 SYNOPSIS
 
@@ -27,9 +28,8 @@ our $VERSION = '0.01';
     for (@scores) { $_->{player} = lc $_->{player} }
     write_xlogfile(\@scores, "scores.xlogfile.new");
 
-    my $score = parse_xlogline($scores[0]);
     my $xlogline = make_xlogline($scores[0], -1);
-    $xlogline->{id} = 0;
+    my $score = parse_xlogline($xlogline);
     print "First place: $score->{player}\n";
     print "$xlogline\n";
 
@@ -51,11 +51,12 @@ This obviously corresponds to the following hash:
         gender   => 'Mal',
     }
 
-There's no quoting. Keys and values can be any non-colon characters. The first
-C<=> separates the key from the value (so in C<a=b=c>, the key is C<a>, and
-the value is C<b=c>. Colons are usually transliterated to underscores. Like a
-Perl hash, if multiple values have the same key, later values will overwrite
-earlier values. Here's something resembling the actual grammar:
+xlogfile supports no quoting. Keys and values may be any non-colon characters.
+The first C<=> separates the key from the value (so in C<a=b=c>, the key is
+C<a>, and the value is C<b=c>. Colons are usually transliterated to
+underscores. Like a Perl hash, if multiple values have the same key, later
+values will overwrite earlier values. Here's something resembling the actual
+grammar:
 
     xlogline <- field [: field]*
     field    <- key=value
@@ -101,7 +102,8 @@ sub read_xlogfile
 
 Takes a string and attempts to parse it as an xlogline. If a parse error
 occurs, C<undef> is returned. The only actual parse error is if there is a
-field with no C<=>. If there are no C<:>, the entire line is a single field.
+field with no C<=>. Lacking C<:> does not invalidate an xlogline; the entire
+line is a single field.
 
 =cut
 
@@ -157,12 +159,12 @@ sub write_xlogfile
 
 =head2 make_xlogline HASHREF[, INTEGER] => STRING
 
-Takes a hash or hashref and turns it into an xlogline. The optional integer
-controls what the function will do when it faces one of three potential
-errors. A value of one will correct the error. A value of zero will cause an
-exception (this is the default). A value of negative one will ignore the error
-which is very likely to cause problems when you read the xlogfile back in
-(you may want this when know for sure that your hashref is fine).
+Takes a hashref and turns it into an xlogline. The optional integer controls
+what the function will do when it faces one of three potential errors. A value
+of one will correct the error. A value of zero will cause an exception (this is
+the default). A value of negative one will ignore the error which is very
+likely to cause problems when you read the xlogfile back in (you may want this
+when know for sure that your hashref is fine).
 
 The potential problems it will fix are:
 
