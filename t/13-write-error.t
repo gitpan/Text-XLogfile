@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 use Test::More tests => 2;
-use Text::XLogfile qw(read_xlogfile write_xlogfile parse_xlogline);
+use Text::XLogfile ':all';
 use File::Temp qw/tempfile/;
 
 my @xlogfile =
@@ -34,6 +34,6 @@ $xlogfile[1]{role} = 'Death_Queen';
 
 {
     my @people = read_xlogfile($filename);
-    is_deeply(\@people, \@xlogfile, "read_xlogfile appears to work 2/2");
+    is_deeply(\@people, \@xlogfile, "write_xlogfile appears to work 2/2");
 }
 

@@ -14,11 +14,11 @@ Text::XLogfile - reading and writing xlogfiles
 
 =head1 VERSION
 
-Version 0.02 released 04 Aug 07
+Version 0.03 released 04 Aug 07
 
 =cut
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 =head1 SYNOPSIS
 
@@ -58,14 +58,15 @@ underscores. Like a Perl hash, if multiple values have the same key, later
 values will overwrite earlier values. Here's something resembling the actual
 grammar:
 
+    xlogfile <- xlogline [\n xlogline]*
     xlogline <- field [: field]*
     field    <- key=value
     key      <- [^:=\n]*
     value    <- [^:\n]*
 
-xlogfiles are used in the NetHack community. CSV is too ill-defined. XML is too
-heavyweight. YAML is multiline. JSON is feasible, but we've already chosen
-xlogfile.
+xlogfiles are used in the NetHack and Crawl communities. CSV is too
+ill-defined. XML is too heavyweight. YAML is multiline. JSON is feasible, but
+we've already chosen xlogfile.
 
 =cut
 
