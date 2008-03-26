@@ -1,11 +1,12 @@
 --- 
-abstract: reading and writing xlogfiles
-author: Shawn M Moore, C<< <sartak at gmail.com> >>
+abstract: read and write xlogfiles
+author: 
+  - Shawn M Moore, C<< <sartak at gmail.com> >>
 build_requires: 
   File::Temp: 0
   Test::More: 0
 distribution_type: module
-generated_by: Module::Install version 0.67
+generated_by: Module::Install version 0.68
 license: perl
 meta-spec: 
   url: http://module-build.sourceforge.net/META-spec-v1.3.html
@@ -18,4 +19,4 @@ no_index:
 requires: 
   Carp: 0
   Exporter: 0
-version: 0.03
+version: 0.04

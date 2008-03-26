@@ -5,20 +5,20 @@ use warnings;
 use base 'Exporter';
 use Carp;
 
-our @EXPORT_OK = qw(read_xlogfile parse_xlogline write_xlogfile make_xlogline);
+our @EXPORT_OK = qw(read_xlogfile parse_xlogline each_xlogline write_xlogfile make_xlogline);
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
 =head1 NAME
 
-Text::XLogfile - reading and writing xlogfiles
+Text::XLogfile - read and write xlogfiles
 
 =head1 VERSION
 
-Version 0.03 released 04 Aug 07
+Version 0.04 released 26 Mar 08
 
 =cut
 
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 
 =head1 SYNOPSIS
 
@@ -32,6 +32,10 @@ our $VERSION = '0.03';
     my $score = parse_xlogline($xlogline);
     print "First place: $score->{player}\n";
     print "$xlogline\n";
+
+    each_xlogline("scores.xlogfile" => sub {
+        printf "%s (%d points) %s\n", $_->{player}, $_->{score}, $_->{death};
+    });
 
 =head1 xlogfile format
 
@@ -65,8 +69,7 @@ grammar:
     value    <- [^:\n]*
 
 xlogfiles are used in the NetHack and Crawl communities. CSV is too
-ill-defined. XML is too heavyweight. YAML is multiline. JSON is feasible, but
-we've already chosen xlogfile.
+ill-defined. XML is too heavyweight. I'd say the same for YAML and JSON.
 
 =cut
 
@@ -85,16 +88,9 @@ sub read_xlogfile
     my $filename = shift;
     my @entries;
 
-    open my $handle, '<', $filename
-        or Carp::croak "Unable to read $filename for reading: $!";
-
-    while (<$handle>)
-    {
-        push @entries, parse_xlogline($_) || {};
-    }
-
-    close $handle
-        or Carp::croak "Unable to close filehandle: $!";
+    each_xlogline($filename => sub {
+        push @entries, $_;
+    });
 
     return @entries;
 }
@@ -105,6 +101,9 @@ Takes a string and attempts to parse it as an xlogline. If a parse error
 occurs, C<undef> is returned. The only actual parse error is if there is a
 field with no C<=>. Lacking C<:> does not invalidate an xlogline; the entire
 line is a single field.
+
+Since xlogfiles are an inherently line-based format, the input will be chomped.
+Any other newlines in the input will be incuded in the output.
 
 =cut
 
@@ -126,6 +125,32 @@ sub parse_xlogline
     }
 
     return $output;
+}
+
+=head2 each_xlogline FILENAME, CODE
+
+This runs the code reference for each xlogline in the given file. The xlogline
+will be passed in as a hashref and as C<$_>. If any IO error occurs in reading
+the file, an exception is thrown. If any error occurs in parsing an xlogline,
+then an empty hash will be used in its place.
+
+=cut
+
+sub each_xlogline {
+    my $filename = shift;
+    my $code = shift;
+
+    open my $handle, '<', $filename
+        or Carp::croak "Unable to read $filename for reading: $!";
+
+    while (<$handle>)
+    {
+        local $_ = parse_xlogline($_) || {};
+        $code->($_);
+    }
+
+    close $handle
+        or Carp::croak "Unable to close filehandle: $!";
 }
 
 =head2 write_xlogfile ARRAYREF OF HASHREFS, FILENAME
@@ -258,34 +283,6 @@ Please report any bugs through RT: email
 C<bug-text-xlogfile at rt.cpan.org>, or browse to
 L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Text-XLogfile>.
 
-=head1 SUPPORT
-
-You can find this documentation for this module with the perldoc command.
-
-    perldoc Text::XLogfile
-
-You can also look for information at:
-
-=over 4
-
-=item * AnnoCPAN: Annotated CPAN documentation
-
-L<http://annocpan.org/dist/Text-XLogfile>
-
-=item * CPAN Ratings
-
-L<http://cpanratings.perl.org/d/Text-XLogfile>
-
-=item * RT: CPAN's request tracker
-
-L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=Text-XLogfile>
-
-=item * Search CPAN
-
-L<http://search.cpan.org/dist/Text-XLogfile>
-
-=back
-
 =head1 ACKNOWLEDGEMENTS
 
 Thanks to Aardvark Joe for coming up with the xlogfile format. It's much
@@ -293,7 +290,7 @@ better than NetHack's default logfile.
 
 =head1 COPYRIGHT & LICENSE
 
-Copyright 2007 Shawn M Moore.
+Copyright 2007-2008 Shawn M Moore.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.
