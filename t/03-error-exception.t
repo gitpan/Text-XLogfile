@@ -1,4 +1,3 @@
-#!perl -T
 use strict;
 use warnings;
 use Test::More tests => 6;
@@ -16,8 +15,7 @@ my $newline_value = { 1 => "a\nb" };
 my $x2h = parse_xlogline($xlogline);
 ok(!defined($x2h), "a=b:c:d=e returns undef");
 
-for
-(
+for (
     [$equals_key,    "Key 'a=b' contains invalid character: '='."],
     [$colon_key,     "Key 'a:b' contains invalid character: ':'."],
     [$newline_key,   "Key 'a\\nb' contains invalid character: newline."],

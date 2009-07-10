@@ -1,4 +1,3 @@
-#!perl -T
 use strict;
 use warnings;
 use Test::More tests => 3;
@@ -11,8 +10,7 @@ name=Catherine:role=Death Queen:gender=Fem
 name=Fred:role=Zombie:gender=Mal
 XLOGFILE
 
-my @xlogfile =
-(
+my @xlogfile = (
     { name => 'Lawrence',  role => 'Computer Scientist', gender => 'Mal' },
     { name => 'Catherine', role => 'Death Queen',        gender => 'Fem' },
     { name => 'Fred',      role => 'Zombie',             gender => 'Mal' },
